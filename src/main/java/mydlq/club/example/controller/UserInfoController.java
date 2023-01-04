@@ -14,7 +14,7 @@ public class UserInfoController {
 
     @GetMapping("/getSign")
     public String getUserInfo() {
-        return "sign success2";
+        return "sign success3";
     }
 
 }
