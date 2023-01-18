@@ -1,6 +1,0 @@
-projectKey=mydlq.club:getSign
-serverUrl=http://192.168.56.103:9000
-serverVersion=6.7.4.38452
-dashboardUrl=http://192.168.56.103:9000/dashboard/index/mydlq.club:getSign
-ceTaskId=AYW_Jp0_bLsTsy8q-Ybh
-ceTaskUrl=http://192.168.56.103:9000/api/ce/task?id=AYW_Jp0_bLsTsy8q-Ybh
