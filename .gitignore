@@ -1,0 +1,35 @@
+target/
+*.iml
+.idea/
+src/main/resources/mybatis-generator/
+src/main/resources/static
+*/target/
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+*/.apt_generated
+*/.classpath
+*/.factorypath
+*/.project
+*/.settings
+*/.springBeans
+## IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+*/.idea
+*/*.iws
+*/*.iml
+*/*.ipr
+#**out
+#
+####spring config file ###
+application-overwrite-*.properties
+/logs
+*.log
+logs
