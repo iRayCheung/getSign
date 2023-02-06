@@ -1,7 +1,0 @@
-From szhvm00524.apac.bosch.com/common/{{image_tag}}
-WORKDIR /usr/src/mymaven/target
-COPY ./{{artifact_name}} ./
-#COPY ./elastic-apm-agent-1.32.0.jar ./
-#RUN cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
-ENTRYPOINT ["java", "-jar", "{{args}}", "/usr/src/mymaven/target/{{artifact_name}}"]
-#ENTRYPOINT ["java", "-javaagent:/usr/src/mymaven/target/elastic-apm-agent-1.32.0.jar", "-Delastic.apm.service_name=DataGovernancePlatform_backend_dev", "-Delastic.apm.server_urls=http://10.161.238.17:8200", "-Delastic.apm.secret_token=", "-Delastic.apm.environment=dev", "-Delastic.apm.application_packages=org.example", "-jar", "-Dspring.profiles.active=dev", "/usr/src/mymaven/target/bss-1.0.0.jar"]
