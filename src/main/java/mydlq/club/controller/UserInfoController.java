@@ -23,7 +23,8 @@ public class UserInfoController {
     @PostMapping("/getSign")
     @ApiOperation("获取签名")
     public String getUserInfo(@RequestBody SignAO signAO) {
-        List<String> whitelist = systemConfig.getWhitelist();
+        //测试获取签名
+        List whitelist = systemConfig.getWhitelist();
         return signAO.getData();
     }
 
