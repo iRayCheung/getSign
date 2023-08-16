@@ -22,6 +22,7 @@ public class GetSignApplication {
         String port = env.getProperty("server.port");
         String path = StringUtils.isEmpty(env.getProperty("server.servlet.context-path"))? "" : env.getProperty("server.servlet.context-path").trim();
         String path1 = StringUtils.isEmpty(env.getProperty("server.servlet.context-path"))? "" : env.getProperty("server.servlet.context-path").trim();
+        String path2 = StringUtils.isEmpty(env.getProperty("server.servlet.context-path"))? "" : env.getProperty("server.servlet.context-path").trim();
         String c = "test";
         log.info("\n----------------------------------------------------------\n\t" +
                 "IovApplication is running! Access URLs:\n\t" +
