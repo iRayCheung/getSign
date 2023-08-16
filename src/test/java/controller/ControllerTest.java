@@ -29,7 +29,6 @@ public class ControllerTest {
     public void getEngineMesData() {
         List<String> whitelist = systemConfig.getWhitelist();
         System.out.println("1");
-        int a = 1/0;
     }
 
 
