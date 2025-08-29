@@ -48,6 +48,7 @@ stages:
     # 获取 ACR Token 并 docker login ACR
     - task: Bash@3
       displayName: "Login to Aliyun ACR"
+      name: ACRLogin  # 必须加这个 name,否则输出的全局变量没法用
       inputs:
         targetType: inline
         script: |
