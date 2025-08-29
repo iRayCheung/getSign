@@ -34,15 +34,15 @@ stages:
       demands: maven
     steps:
 
-    - task: Maven@3
-      displayName: 'Build with Maven'
+    # - task: Maven@3
+    #   displayName: 'Build with Maven'
 
-    - task: CopyFiles@2
-      displayName: 'Copy Files to: $(build.artifactstagingdirectory)'
-      inputs:
-        SourceFolder: '$(system.defaultworkingdirectory)'
-        Contents: '**/*.jar'
-        TargetFolder: '$(build.artifactstagingdirectory)'
+    # - task: CopyFiles@2
+    #   displayName: 'Copy Files to: $(build.artifactstagingdirectory)'
+    #   inputs:
+    #     SourceFolder: '$(system.defaultworkingdirectory)'
+    #     Contents: '**/*.jar'
+    #     TargetFolder: '$(build.artifactstagingdirectory)'
 
     
     # 获取 ACR Token 并 docker login ACR
@@ -63,14 +63,14 @@ stages:
           echo "$AUTH_TOKEN" | docker login --username=AliyunReservedSSO-Administrator/ezl1wx@bosch.com@1262255223177621 acr-rbhpoc-prod-hz-registry.cn-hangzhou.cr.aliyuncs.com --password-stdin
           echo "login success"
 
-    - task: Docker@2
-      displayName: 'Build and Push Docker Image'
-      inputs:
-        containerRegistry: '' # 留空，使用上一步登录的 Docker 环境
-        repository: 'acr-rbhpoc-prod-hz-registry.cn-hangzhou.cr.aliyuncs.com/rbhpoc/rbhpoc-qmm-backend'
-        Dockerfile: '**/Dockerfile-prod'
-        tags: |
-          $(Build.BuildId)
+    # - task: Docker@2
+    #   displayName: 'Build and Push Docker Image'
+    #   inputs:
+    #     containerRegistry: '' # 留空，使用上一步登录的 Docker 环境
+    #     repository: 'acr-rbhpoc-prod-hz-registry.cn-hangzhou.cr.aliyuncs.com/rbhpoc/rbhpoc-qmm-backend'
+    #     Dockerfile: '**/Dockerfile-prod'
+    #     tags: |
+    #       $(Build.BuildId)
 
 # ========== Stage 2: deploy image to SelfHosted Agent ==========
 - stage: Deploy
@@ -93,6 +93,7 @@ stages:
       inputs:
         targetType: inline
         script: |
+          echo  AUTH_TOKEN   $AUTH_TOKEN
           # 用非交互模式配置
           aliyun configure set --mode AK --access-key-id $(ALIYUN_ACCESS_KEY_ID) --access-key-secret $(ALIYUN_ACCESS_KEY_SECRET) --region cn-hangzhou
           echo "$AUTH_TOKEN" | docker login --username=AliyunReservedSSO-Administrator/ezl1wx@bosch.com@1262255223177621 acr-rbhpoc-prod-hz-registry.cn-hangzhou.cr.aliyuncs.com --password-stdin
