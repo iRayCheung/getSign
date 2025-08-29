@@ -75,6 +75,7 @@ stages:
             registry.cn-hangzhou.aliyuncs.com \
             -u $(ALIYUN_ACCESS_KEY_ID) \
             --password-stdin
+          echo "login success"
 
 
 #     - task: Docker@2
