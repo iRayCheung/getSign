@@ -33,41 +33,64 @@ stages:
       name: Azure Pipelines
       demands: maven
     steps:
-    - task: Maven@3
-      displayName: 'Build with Maven'
+    # - task: Maven@3
+    #   displayName: 'Build with Maven'
 
-    - task: CopyFiles@2
-      displayName: 'Copy Files to: $(build.artifactstagingdirectory)'
+    # - task: CopyFiles@2
+    #   displayName: 'Copy Files to: $(build.artifactstagingdirectory)'
+    #   inputs:
+    #     SourceFolder: '$(system.defaultworkingdirectory)'
+    #     Contents: '**/*.jar'
+    #     TargetFolder: '$(build.artifactstagingdirectory)'
+
+    
+    # 新增步骤：获取 ACR Token 并 docker login
+    - task: Bash@3
+      displayName: "Login to Aliyun ACR"
       inputs:
-        SourceFolder: '$(system.defaultworkingdirectory)'
-        Contents: '**/*.jar'
-        TargetFolder: '$(build.artifactstagingdirectory)'
+        targetType: inline
+        script: |
+          # 安装 aliyun cli（如果 Agent 没预装）
+          curl -sS https://aliyuncli.alicdn.com/aliyun-cli-linux-latest-amd64.tgz -o aliyun-cli.tgz
+          tar -xvf aliyun-cli.tgz >/dev/null
+          sudo mv aliyun /usr/local/bin/
 
-    - task: Docker@2
-      displayName: 'Build and Push Docker Image'
-      inputs:
-        containerRegistry: 'dockerhub-test'
-        repository: 'raypick/rbhpoc-qmm-backend'
-        Dockerfile: '**/Dockerfile-prod'
-        tags: |
-          $(Build.BuildId)
+          # 配置阿里云账号（AK/SK 存在 pipeline secret 变量中）
+          aliyun configure set --access-key-id $ALIYUN_ACCESS_KEY_ID \
+                               --access-key-secret $ALIYUN_ACCESS_KEY_SECRET \
+                               --region cn-hangzhou
 
-# ========== Stage 2: deploy image to SelfHosted Agent ==========
-- stage: Deploy
-  displayName: 'Deploy to ECS Agent'
-  dependsOn: Build
-  jobs:
-  - job: DeployJob
-    pool:
-      name: ecs-agent-pool-rbhpoc-ali-prod
-      demands:
-        - agent.name -equals ecs-rbhpoc-eol-test-hz
-    steps:
-    - checkout: none
+          # 获取临时登录 Token
+          AUTH_TOKEN=$(aliyun cr GetAuthorizationToken --region cn-hangzhou | jq -r '.data.authorizationToken')
 
-    - script: |
-        docker stop getsign || true
-        docker rm getsign || true
-        docker run -d --name getsign raypick/rbhpoc-qmm-backend:$(Build.BuildId)
-      displayName: 'Run latest docker container'
+          # docker 登录 ACR（registry 地址记得替换成你的实例）
+          echo "$AUTH_TOKEN" | docker login --username=cr_temp_user --password-stdin registry.cn-hangzhou.aliyuncs.com
+
+#     - task: Docker@2
+#       displayName: 'Build and Push Docker Image'
+#       inputs:
+#         containerRegistry: 'dockerhub-test'
+#         repository: 'raypick/rbhpoc-qmm-backend'
+#         Dockerfile: '**/Dockerfile-prod'
+#         tags: |
+#           $(Build.BuildId)
+
+# # ========== Stage 2: deploy image to SelfHosted Agent ==========
+# - stage: Deploy
+#   displayName: 'Deploy to ECS Agent'
+#   dependsOn: Build
+#   jobs:
+#   - job: DeployJob
+#     pool:
+#       name: ecs-agent-pool-rbhpoc-ali-prod
+#       demands:
+#         - agent.name -equals ecs-rbhpoc-eol-test-hz
+#     steps:
+#     - checkout: none
+
+#     - script: |
+#         docker stop getsign || true
+#         docker rm getsign || true
+#         docker run -d --name getsign raypick/rbhpoc-qmm-backend:$(Build.BuildId)
+#       displayName: 'Run latest docker container'
 
