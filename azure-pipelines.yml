@@ -73,18 +73,12 @@ stages:
     #     tags: |
     #       $(Build.BuildId)
 
-# ========== Stage 2: deploy image to SelfHosted Agent ==========
-- stage: Deploy
-  displayName: 'Deploy to ECS Agent'
-  dependsOn: Build
-  variables:
-    AUTH_TOKEN: $[ dependencies.Build.outputs['BuildJob.ACRLogin.AUTH_TOKEN'] ]
-  jobs:
   - job: DeployJob
     pool:
       name: ecs-agent-pool-rbhpoc-ali-prod
       demands:
         - agent.name -equals ecs-rbhpoc-eol-test-hz
+    dependsOn: BuildJob  # <-- 必须加
     steps:
     - checkout: none
 
@@ -94,6 +88,7 @@ stages:
       inputs:
         targetType: inline
         script: |
+          AUTH_TOKEN=$(dependencies.BuildJob.outputs['ACRLogin.AUTH_TOKEN'])
           echo  "AUTH_TOKEN:   $AUTH_TOKEN"
           echo "$AUTH_TOKEN" | docker login --username=AliyunReservedSSO-Administrator/ezl1wx@bosch.com@1262255223177621 acr-rbhpoc-prod-hz-registry.cn-hangzhou.cr.aliyuncs.com --password-stdin
           echo "login success"
@@ -103,4 +98,35 @@ stages:
         docker rm getsign || true
         docker run -d --name getsign acr-rbhpoc-prod-hz-registry.cn-hangzhou.cr.aliyuncs.com/rbhpoc/rbhpoc-qmm-backend:$(Build.BuildId)
       displayName: 'Run latest docker container'
+
+# ========== Stage 2: deploy image to SelfHosted Agent ==========
+# - stage: Deploy
+#   displayName: 'Deploy to ECS Agent'
+#   dependsOn: Build
+#   variables:
+#     AUTH_TOKEN: $[ dependencies.Build.outputs['BuildJob.ACRLogin.AUTH_TOKEN'] ]
+#   jobs:
+#   - job: DeployJob
+#     pool:
+#       name: ecs-agent-pool-rbhpoc-ali-prod
+#       demands:
+#         - agent.name -equals ecs-rbhpoc-eol-test-hz
+#     steps:
+#     - checkout: none
+
+#     # 获取 ACR Token 并 docker login ACR
+#     - task: Bash@3
+#       displayName: "Login to Aliyun ACR"
+#       inputs:
+#         targetType: inline
+#         script: |
+#           echo  "AUTH_TOKEN:   $AUTH_TOKEN"
+#           echo "$AUTH_TOKEN" | docker login --username=AliyunReservedSSO-Administrator/ezl1wx@bosch.com@1262255223177621 acr-rbhpoc-prod-hz-registry.cn-hangzhou.cr.aliyuncs.com --password-stdin
+#           echo "login success"
+
+#     - script: |
+#         docker stop getsign || true
+#         docker rm getsign || true
+#         docker run -d --name getsign acr-rbhpoc-prod-hz-registry.cn-hangzhou.cr.aliyuncs.com/rbhpoc/rbhpoc-qmm-backend:$(Build.BuildId)
+#       displayName: 'Run latest docker container'
 
