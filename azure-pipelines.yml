@@ -48,7 +48,7 @@ stages:
     # 获取 ACR Token 并 docker login ACR
     - task: Bash@3
       displayName: "Login to Aliyun ACR"
-      name: ACRLogin  # 必须加这个 name,否则输出的全局变量没法用
+      name: HostedAgentACRLogin  # 必须加这个 name,否则输出的全局变量没法用
       inputs:
         targetType: inline
         script: |
@@ -61,7 +61,7 @@ stages:
           AUTH_TOKEN=$(aliyun cr GetAuthorizationToken --InstanceId cri-qwmdiuukfsngpi5h --region cn-hangzhou | jq -r '.AuthorizationToken')
           echo "$AUTH_TOKEN" | docker login --username=AliyunReservedSSO-Administrator/ezl1wx@bosch.com@1262255223177621 acr-rbhpoc-prod-hz-registry.cn-hangzhou.cr.aliyuncs.com --password-stdin
           # 输出变量AUTH_TOKEN,用于全局使用
-          echo "##vso[task.setvariable variable=AUTH_TOKEN;isOutput=true]$AUTH_TOKEN"
+          #echo "##vso[task.setvariable variable=AUTH_TOKEN;isOutput=true]$AUTH_TOKEN"
           echo "login success"
 
     # - task: Docker@2
@@ -85,12 +85,20 @@ stages:
     # 获取 ACR Token 并 docker login ACR
     - task: Bash@3
       displayName: "Login to Aliyun ACR"
+      name: SelfHostedAgentACRLogin  # 必须加这个 name,否则输出的全局变量没法用
       inputs:
         targetType: inline
         script: |
-          AUTH_TOKEN=$(dependencies.BuildJob.outputs['ACRLogin.AUTH_TOKEN'])
-          echo  "AUTH_TOKEN:   $AUTH_TOKEN"
+          curl -sS https://aliyuncli.alicdn.com/aliyun-cli-linux-latest-amd64.tgz -o aliyun-cli.tgz
+          tar -xvf aliyun-cli.tgz >/dev/null
+          sudo mv aliyun /usr/local/bin/
+
+          # 用非交互模式配置
+          aliyun configure set --mode AK --access-key-id $(ALIYUN_ACCESS_KEY_ID) --access-key-secret $(ALIYUN_ACCESS_KEY_SECRET) --region cn-hangzhou
+          AUTH_TOKEN=$(aliyun cr GetAuthorizationToken --InstanceId cri-qwmdiuukfsngpi5h --region cn-hangzhou | jq -r '.AuthorizationToken')
           echo "$AUTH_TOKEN" | docker login --username=AliyunReservedSSO-Administrator/ezl1wx@bosch.com@1262255223177621 acr-rbhpoc-prod-hz-registry.cn-hangzhou.cr.aliyuncs.com --password-stdin
+          # 输出变量AUTH_TOKEN,用于全局使用
+          #echo "##vso[task.setvariable variable=AUTH_TOKEN;isOutput=true]$AUTH_TOKEN"
           echo "login success"
 
     - script: |
@@ -104,7 +112,7 @@ stages:
 #   displayName: 'Deploy to ECS Agent'
 #   dependsOn: Build
 #   variables:
-#     AUTH_TOKEN: $[ dependencies.Build.outputs['BuildJob.ACRLogin.AUTH_TOKEN'] ]
+#     AUTH_TOKEN: $[ dependencies.Build.outputs['BuildJob.HostedAgentACRLogin.AUTH_TOKEN'] ]
 #   jobs:
 #   - job: DeployJob
 #     pool:
