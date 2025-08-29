@@ -6,4 +6,4 @@ RUN ln -sf /usr/share/zoneinfo/$TZ /etc/localtime    && echo $TZ > /etc/timezone
 
 COPY ./target/getSign-0.0.1.jar ./
 
-ENTRYPOINT ["java", "-jar", "-Dspring.profiles.active=prod", "-Xms3g", "-Xmx3g", "-Xmn2g", "/usr/src/mymaven/getSign-0.0.1.jar"]
+ENTRYPOINT ["java", "-jar", "-Dspring.profiles.active=prod", "-Xms3g", "-Xmx3g", "-Xmn2g", "/usr/src/mymaven/target/getSign-0.0.1.jar"]
