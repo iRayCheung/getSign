@@ -24,7 +24,7 @@ trigger:
 - main
 
 stages:
-# ========== Stage 1: Build & Push Docker 镜像 ==========
+# ========== Stage 1: Build & Push Docker Image ==========
 - stage: Build
   displayName: 'Build and Push Docker Image'
   jobs:
@@ -52,7 +52,7 @@ stages:
         tags: |
           $(Build.BuildId)
 
-# ========== Stage 2: 部署容器到自托管 Agent ==========
+# ========== Stage 2: deploy image to SelfHosted Agent ==========
 - stage: Deploy
   displayName: 'Deploy to ECS Agent'
   dependsOn: Build
