@@ -98,6 +98,7 @@ stages:
           # 用非交互模式配置
           # aliyun configure set --mode AK --access-key-id $(ALIYUN_ACCESS_KEY_ID) --access-key-secret $(ALIYUN_ACCESS_KEY_SECRET) --region cn-hangzhou
           # AUTH_TOKEN=$(aliyun cr GetAuthorizationToken --InstanceId cri-qwmdiuukfsngpi5h --region cn-hangzhou | jq -r '.AuthorizationToken')
+          echo "$AUTH_TOKEN_From_BuildJob: AUTH_TOKEN_From_BuildJob"
           echo "$AUTH_TOKEN_From_BuildJob" | docker login --username=AliyunReservedSSO-Administrator/ezl1wx@bosch.com@1262255223177621 acr-rbhpoc-prod-hz-registry.cn-hangzhou.cr.aliyuncs.com --password-stdin
           echo "login success"
 
