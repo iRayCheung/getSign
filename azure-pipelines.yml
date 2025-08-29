@@ -34,21 +34,21 @@ stages:
       demands: maven
     steps:
 
-    # - task: Maven@3
-    #   displayName: 'Build with Maven'
+    - task: Maven@3
+      displayName: 'Build with Maven'
 
-    # - task: CopyFiles@2
-    #   displayName: 'Copy Files to: $(build.artifactstagingdirectory)'
-    #   inputs:
-    #     SourceFolder: '$(system.defaultworkingdirectory)'
-    #     Contents: '**/*.jar'
-    #     TargetFolder: '$(build.artifactstagingdirectory)'
+    - task: CopyFiles@2
+      displayName: 'Copy Files to: $(build.artifactstagingdirectory)'
+      inputs:
+        SourceFolder: '$(system.defaultworkingdirectory)'
+        Contents: '**/*.jar'
+        TargetFolder: '$(build.artifactstagingdirectory)'
 
     
     # 获取 ACR Token 并 docker login ACR
     - task: Bash@3
       displayName: "Login to Aliyun ACR"
-      name: HostedAgentACRLogin  # 必须加这个 name,否则输出的全局变量没法用
+      name: HostedAgentACRLogin
       inputs:
         targetType: inline
         script: |
@@ -64,14 +64,14 @@ stages:
           #echo "##vso[task.setvariable variable=AUTH_TOKEN;isOutput=true]$AUTH_TOKEN"
           echo "login success"
 
-    # - task: Docker@2
-    #   displayName: 'Build and Push Docker Image'
-    #   inputs:
-    #     containerRegistry: '' # 留空，使用上一步登录的 Docker 环境
-    #     repository: 'acr-rbhpoc-prod-hz-registry.cn-hangzhou.cr.aliyuncs.com/rbhpoc/rbhpoc-qmm-backend'
-    #     Dockerfile: '**/Dockerfile-prod'
-    #     tags: |
-    #       $(Build.BuildId)
+    - task: Docker@2
+      displayName: 'Build and Push Docker Image'
+      inputs:
+        containerRegistry: '' # 留空，使用上一步登录的 Docker 环境
+        repository: 'acr-rbhpoc-prod-hz-registry.cn-hangzhou.cr.aliyuncs.com/rbhpoc/rbhpoc-qmm-backend'
+        Dockerfile: '**/Dockerfile-prod'
+        tags: |
+          $(Build.BuildId)
 
   - job: DeployJob
     pool:
@@ -79,15 +79,15 @@ stages:
       demands:
         - agent.name -equals ecs-rbhpoc-eol-test-hz
     dependsOn: BuildJob  # <-- 必须加
-    variables:
-      AUTH_TOKEN_From_BuildJob: $[ dependencies.Build.outputs['HostedAgentACRLogin.AUTH_TOKEN'] ]
+    # variables:
+    #   AUTH_TOKEN_From_BuildJob: $[ dependencies.Build.outputs['HostedAgentACRLogin.AUTH_TOKEN'] ]
     steps:
     - checkout: none
 
     # 获取 ACR Token 并 docker login ACR
     - task: Bash@3
       displayName: "Login to Aliyun ACR"
-      name: SelfHostedAgentACRLogin  # 必须加这个 name,否则输出的全局变量没法用
+      name: SelfHostedAgentACRLogin
       inputs:
         targetType: inline
         script: |
@@ -98,8 +98,7 @@ stages:
           # 用非交互模式配置
           # aliyun configure set --mode AK --access-key-id $(ALIYUN_ACCESS_KEY_ID) --access-key-secret $(ALIYUN_ACCESS_KEY_SECRET) --region cn-hangzhou
           # AUTH_TOKEN=$(aliyun cr GetAuthorizationToken --InstanceId cri-qwmdiuukfsngpi5h --region cn-hangzhou | jq -r '.AuthorizationToken')
-          echo "AUTH_TOKEN_From_BuildJob: $AUTH_TOKEN_From_BuildJob"
-          echo "$AUTH_TOKEN_From_BuildJob" | docker login --username=AliyunReservedSSO-Administrator/ezl1wx@bosch.com@1262255223177621 acr-rbhpoc-prod-hz-registry.cn-hangzhou.cr.aliyuncs.com --password-stdin
+          echo "$AUTH_TOKEN" | docker login --username=AliyunReservedSSO-Administrator/ezl1wx@bosch.com@1262255223177621 acr-rbhpoc-prod-hz-registry.cn-hangzhou.cr.aliyuncs.com --password-stdin
           echo "login success"
 
     - script: |
@@ -107,6 +106,7 @@ stages:
         docker rm getsign || true
         docker run -d --name getsign acr-rbhpoc-prod-hz-registry.cn-hangzhou.cr.aliyuncs.com/rbhpoc/rbhpoc-qmm-backend:$(Build.BuildId)
       displayName: 'Run latest docker container'
+
 
 # ========== Stage 2: deploy image to SelfHosted Agent ==========
 # - stage: Deploy
