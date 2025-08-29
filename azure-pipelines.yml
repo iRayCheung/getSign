@@ -93,10 +93,6 @@ stages:
       inputs:
         targetType: inline
         script: |
-          curl -sS https://aliyuncli.alicdn.com/aliyun-cli-linux-latest-amd64.tgz -o aliyun-cli.tgz
-          tar -xvf aliyun-cli.tgz >/dev/null
-          sudo mv aliyun /usr/local/bin/
-
           # 用非交互模式配置
           echo "$AUTH_TOKEN" | docker login --username=AliyunReservedSSO-Administrator/ezl1wx@bosch.com@1262255223177621 acr-rbhpoc-prod-hz-registry.cn-hangzhou.cr.aliyuncs.com --password-stdin
           echo "login success"
