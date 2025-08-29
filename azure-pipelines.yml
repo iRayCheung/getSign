@@ -70,22 +70,22 @@ stages:
         tags: |
           $(Build.BuildId)
 
-# # ========== Stage 2: deploy image to SelfHosted Agent ==========
-# - stage: Deploy
-#   displayName: 'Deploy to ECS Agent'
-#   dependsOn: Build
-#   jobs:
-#   - job: DeployJob
-#     pool:
-#       name: ecs-agent-pool-rbhpoc-ali-prod
-#       demands:
-#         - agent.name -equals ecs-rbhpoc-eol-test-hz
-#     steps:
-#     - checkout: none
+# ========== Stage 2: deploy image to SelfHosted Agent ==========
+- stage: Deploy
+  displayName: 'Deploy to ECS Agent'
+  dependsOn: Build
+  jobs:
+  - job: DeployJob
+    pool:
+      name: ecs-agent-pool-rbhpoc-ali-prod
+      demands:
+        - agent.name -equals ecs-rbhpoc-eol-test-hz
+    steps:
+    - checkout: none
 
-#     - script: |
-#         docker stop getsign || true
-#         docker rm getsign || true
-#         docker run -d --name getsign raypick/rbhpoc-qmm-backend:$(Build.BuildId)
-#       displayName: 'Run latest docker container'
+    - script: |
+        docker stop getsign || true
+        docker rm getsign || true
+        docker run -d --name getsign acr-rbhpoc-prod-hz-registry.cn-hangzhou.cr.aliyuncs.com/rbhpoc/rbhpoc-qmm-backend:$(Build.BuildId)
+      displayName: 'Run latest docker container'
 
