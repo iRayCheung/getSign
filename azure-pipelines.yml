@@ -33,7 +33,7 @@ stages:
       name: Azure Pipelines
       demands: maven
     steps:
-    - checkout: none
+
     - task: Maven@3
       displayName: 'Build with Maven'
 
