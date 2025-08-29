@@ -58,6 +58,8 @@ stages:
           # 用非交互模式配置
           aliyun configure set --mode AK --access-key-id $(ALIYUN_ACCESS_KEY_ID) --access-key-secret $(ALIYUN_ACCESS_KEY_SECRET) --region cn-hangzhou
           AUTH_TOKEN=$(aliyun cr GetAuthorizationToken --InstanceId cri-qwmdiuukfsngpi5h --region cn-hangzhou | jq -r '.AuthorizationToken')
+          # 输出变量AUTH_TOKEN,用于全局使用
+          echo "##vso[task.setvariable variable=AUTH_TOKEN;isOutput=true]$AUTH_TOKEN"
           echo "$AUTH_TOKEN" | docker login --username=AliyunReservedSSO-Administrator/ezl1wx@bosch.com@1262255223177621 acr-rbhpoc-prod-hz-registry.cn-hangzhou.cr.aliyuncs.com --password-stdin
           echo "login success"
 
@@ -74,6 +76,8 @@ stages:
 - stage: Deploy
   displayName: 'Deploy to ECS Agent'
   dependsOn: Build
+  variables:
+    AUTH_TOKEN: $[ dependencies.Build.outputs['BuildJob.ACRLogin.AUTH_TOKEN'] ]
   jobs:
   - job: DeployJob
     pool:
@@ -82,6 +86,20 @@ stages:
         - agent.name -equals ecs-rbhpoc-eol-test-hz
     steps:
     - checkout: none
+
+    # 获取 ACR Token 并 docker login ACR
+    - task: Bash@3
+      displayName: "Login to Aliyun ACR"
+      inputs:
+        targetType: inline
+        script: |
+          curl -sS https://aliyuncli.alicdn.com/aliyun-cli-linux-latest-amd64.tgz -o aliyun-cli.tgz
+          tar -xvf aliyun-cli.tgz >/dev/null
+          sudo mv aliyun /usr/local/bin/
+
+          # 用非交互模式配置
+          echo "$AUTH_TOKEN" | docker login --username=AliyunReservedSSO-Administrator/ezl1wx@bosch.com@1262255223177621 acr-rbhpoc-prod-hz-registry.cn-hangzhou.cr.aliyuncs.com --password-stdin
+          echo "login success"
 
     - script: |
         docker stop getsign || true
